@@ -1,9 +1,8 @@
 import React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
 import logo from './assets/logo.png';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
-import uploadToAnonymousFilesAsync from 'anonymous-files';
 
 export default function App() {
   const [selectedImage, setSelectedImage] = React.useState(null);
@@ -21,14 +20,8 @@ export default function App() {
     if (pickerResult.cancelled === true) {
       return;
     }
-    if(Platform.OS ==='web') {
-      console.log('awaiting uplaod');
-      let remoteUri = await uploadToAnonymousFilesAsync(pickerResult.uri);
-      setSelectedImage({localUri: pickerResult.uri, remoteUri});
-      console.log('image uploaded');
-    } else {
+
       setSelectedImage({localUri: pickerResult.uri, remoteUri: null});
-    }
     
   };
 
@@ -70,7 +63,6 @@ export default function App() {
             Clear Image
           </Text>
         </TouchableOpacity>
-        <Button title='test button' style={{backgroundColor: 'red', padding: 10}}></Button>
       </View>
     );
   }
