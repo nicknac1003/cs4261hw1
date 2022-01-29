@@ -1,165 +1,171 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View, TextInput,  
+import { Image, StyleSheet, Text, TouchableOpacity, View, TextInput,
 KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform, Button } from 'react-native';
 import logo from './assets/logo.png';
-import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
+//import { initializeApp} from 'firebase/app';
+import Firebase from "firebase";
+import config from "./config.js";
 
-export default function App() {
-  const [selectedImage, setSelectedImage] = React.useState(null);
-  const [profile, setProfile] = React.useState({email: '', password:''});
-  let openImagePickerAsync = async () => {
-    let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === false) {
-      alert("Permission to access camera roll is required!")
-      return
-    }
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    Firebase.initializeApp(config);
 
-    let pickerResult = await ImagePicker.launchImageLibraryAsync();
-    //console.log(pickerResult);
-
-    if (pickerResult.cancelled === true) {
-      return;
-    }
-
-    setSelectedImage({localUri: pickerResult.uri});
-    
-  };
-
-  let openShareDialogAsync = async () => {
-    if (!(await Sharing.isAvailableAsync())) {
-      alert(`the image is available for sharing at ${selectedImage.remoteUri}`);
-      return;
-    }
-
-    await Sharing.shareAsync(selectedImage.localUri).catch((err)=>console.log(err));
-  };
-
-  let clearImage = () => {
-    setSelectedImage(null);
-    setProfile({email: '', password:''})
+    this.state = {
+      developers: []
+    };
   }
 
-  let handleSubmit = (e) => {
-    console.log(profile);
+  componentDidMount() {
+    this.getUserData();
   }
 
-  
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state) {
+      this.writeUserData();
+    }
+  }
 
-  if (selectedImage !== null) {
+  writeUserData = () => {
+    Firebase.database()
+      .ref("/")
+      .set(this.state);
+    console.log("DATA SAVED");
+  };
+
+  getUserData = () => {
+    let ref = Firebase.database().ref("/");
+    ref.on("value", snapshot => {
+      const state = snapshot.val();
+      this.setState(state);
+    });
+  };
+
+  handleSubmit = event => {
+    event.preventDefault();
+    let name = this.refs.name.value;
+    let role = this.refs.role.value;
+    let uid = this.refs.uid.value;
+
+    if (uid && name && role) {
+      const { developers } = this.state;
+      const devIndex = developers.findIndex(data => {
+        return data.uid === uid;
+      });
+      developers[devIndex].name = name;
+      developers[devIndex].role = role;
+      this.setState({ developers });
+    } else if (name && role) {
+      const uid = new Date().getTime().toString();
+      const { developers } = this.state;
+      developers.push({ uid, name, role });
+      this.setState({ developers });
+    }
+
+    this.refs.name.value = "";
+    this.refs.role.value = "";
+    this.refs.uid.value = "";
+  };
+
+  removeData = developer => {
+    const { developers } = this.state;
+    const newState = developers.filter(data => {
+      return data.uid !== developer.uid;
+    });
+    this.setState({ developers: newState });
+  };
+
+  updateData = developer => {
+    this.refs.uid.value = developer.uid;
+    this.refs.name.value = developer.name;
+    this.refs.role.value = developer.role;
+  };
+
+  render() {
+    const { developers } = this.state;
     return (
-      <View style={styles.container}>
-        <Image
-        source={{uri: selectedImage.localUri}}
-        style={styles.thumbnail}
-        />
-        <TouchableOpacity 
-        onPress={openShareDialogAsync}
-        style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            Share this photo
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-        onPress={clearImage}
-        style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            Clear Image
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <React.Fragment>
+        <div className="container">
+          <div className="row">
+            <div className="col-xl-12">
+              <h1>Firebase Development Team</h1>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xl-12">
+              {developers.map(developer => (
+                <div
+                  key={developer.uid}
+                  className="card float-left"
+                  style={{ width: "18rem", marginRight: "1rem" }}
+                >
+                  <div className="card-body">
+                    <h5 className="card-title">{developer.name}</h5>
+                    <p className="card-text">{developer.role}</p>
+                    <button
+                      onClick={() => this.removeData(developer)}
+                      className="btn btn-link"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => this.updateData(developer)}
+                      className="btn btn-link"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xl-12">
+              <h1>Add new team member here</h1>
+              <form onSubmit={this.handleSubmit}>
+                <div className="form-row">
+                  <input type="hidden" ref="uid" />
+                  <div className="form-group col-md-6">
+                    <label>Name</label>
+                    <input
+                      type="text"
+                      ref="name"
+                      className="form-control"
+                      placeholder="Name"
+                    />
+                  </div>
+                  <div className="form-group col-md-6">
+                    <label>Role</label>
+                    <input
+                      type="text"
+                      ref="role"
+                      className="form-control"
+                      placeholder="Role"
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-primary">
+                  Save
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xl-12">
+              <h3>
+                Tutorial{" "}
+                <a href="https://www.educative.io/edpresso/firebase-as-simple-database-to-react-app">
+                  here
+                </a>
+              </h3>
+            </div>
+          </div>
+        </div>
+      </React.Fragment>
     );
   }
-  return (
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View styles={styles.content}>
-            <View >
-              <Image source={logo} style={styles.logo} />
-              <Text style={styles.instructions}>
-                To share a photo from your phone with a friend, just press the button below!
-
-              </Text>
-              <TouchableOpacity
-                onPress={openImagePickerAsync}
-                style={styles.button}>
-                  <Text style={styles.buttonText}>
-                    Pick a photo
-                  </Text>
-                </TouchableOpacity>
-            </View>
-            <View>
-              <TextInput
-              style={styles.input}
-              value={profile.email}
-              onChangeText={(text)=>setProfile({...profile, email: text})}
-              placeholder='email...'
-              autoCapitalize='none'
-              />
-              <TextInput
-              style={styles.input}
-              value={profile.password}
-              onChangeText={(text)=>setProfile({...profile, password: text})}
-              secureTextEntry={true}
-              placeholder='password...'
-              />
-
-              <Button title='Submit' onPress={handleSubmit}></Button>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    backgroundColor: '#fff',
-    
-  },
-  logo: {
-    width: 305,
-    height: 159,
-    marginBottom: 10,
-    alignSelf: 'center',
-  },
-  instructions: {
-    color: '#888',
-    fontSize: 18,
-    marginHorizontal: 15,
-    textAlign: 'center',
-  },
-  button: {
-    width: 200,
-    backgroundColor: 'blue',
-    padding: 20,
-    borderRadius: 5,
-    alignSelf: 'center',
-  },
-  buttonText: {
-    fontSize: 20,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  thumbnail: {
-    width: 300,
-    height: 300,
-    resizeMode: 'contain',
-  },
-  input: {
-    height: 40,
-    width: 300,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    alignSelf: 'center',
-  },
-});
+export default App;
