@@ -1,115 +1,55 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, TextInput,  
 KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform, Button } from 'react-native';
-import logo from './assets/logo.png';
-import * as ImagePicker from 'expo-image-picker';
-import * as Sharing from 'expo-sharing';
+import { firebase } from './config.js';
+
 
 export default function App() {
-  const [selectedImage, setSelectedImage] = React.useState(null);
+
   const [profile, setProfile] = React.useState({email: '', password:''});
-  let openImagePickerAsync = async () => {
-    let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      alert("Permission to access camera roll is required!")
-      return
-    }
-
-    let pickerResult = await ImagePicker.launchImageLibraryAsync();
-    //console.log(pickerResult);
-
-    if (pickerResult.cancelled === true) {
-      return;
-    }
-
-    setSelectedImage({localUri: pickerResult.uri});
-    
-  };
-
-  let openShareDialogAsync = async () => {
-    if (!(await Sharing.isAvailableAsync())) {
-      alert(`the image is available for sharing at ${selectedImage.remoteUri}`);
-      return;
-    }
-
-    await Sharing.shareAsync(selectedImage.localUri).catch((err)=>console.log(err));
-  };
-
-  let clearImage = () => {
-    setSelectedImage(null);
-    setProfile({email: '', password:''})
-  }
-
+  const [authSucc, setAuth] = React.useState(false);
   let handleSubmit = (e) => {
     console.log(profile);
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(profile.email, profile.password)
+      .then(()=>setAuth(true))
+      .catch((err)=>alert(err))
+      
   }
 
-  
 
-  if (selectedImage !== null) {
-    return (
-      <View style={styles.container}>
-        <Image
-        source={{uri: selectedImage.localUri}}
-        style={styles.thumbnail}
-        />
-        <TouchableOpacity 
-        onPress={openShareDialogAsync}
-        style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            Share this photo
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-        onPress={clearImage}
-        style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            Clear Image
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
   return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View styles={styles.content}>
-            <View >
-              <Image source={logo} style={styles.logo} />
-              <Text style={styles.instructions}>
-                To share a photo from your phone with a friend, just press the button below!
+          
+            {
+              (authSucc===false)?
+              <View styles={styles.content}>
+                <Text style={{fontSize: 40, alignSelf: 'center', marginBottom: 50}}>Register Account</Text>
+                <TextInput
+                style={styles.input}
+                value={profile.email}
+                onChangeText={(text)=>setProfile({...profile, email: text})}
+                placeholder='email...'
+                secureTextEntry={false}
+                autoCapitalize='none'
+                />
+                <TextInput
+                style={styles.input}
+                value={profile.password}
+                onChangeText={(text)=>setProfile({...profile, password: text})}
+                secureTextEntry={true}
+                placeholder='password...'
+                />
 
-              </Text>
-              <TouchableOpacity
-                onPress={openImagePickerAsync}
-                style={styles.button}>
-                  <Text style={styles.buttonText}>
-                    Pick a photo
-                  </Text>
-                </TouchableOpacity>
-            </View>
-            <View>
-              <TextInput
-              style={styles.input}
-              value={profile.email}
-              onChangeText={(text)=>setProfile({...profile, email: text})}
-              placeholder='email...'
-              autoCapitalize='none'
-              />
-              <TextInput
-              style={styles.input}
-              value={profile.password}
-              onChangeText={(text)=>setProfile({...profile, password: text})}
-              secureTextEntry={true}
-              placeholder='password...'
-              />
-
-              <Button title='Submit' onPress={handleSubmit}></Button>
-            </View>
-          </View>
+                <Button title='Submit' onPress={handleSubmit}></Button>
+              </View>
+            :
+            <Text>Account Created</Text>
+            }
+            
+          
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
   );
