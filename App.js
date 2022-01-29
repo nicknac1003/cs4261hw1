@@ -21,7 +21,7 @@ export default function App() {
       return;
     }
 
-      setSelectedImage({localUri: pickerResult.uri, remoteUri: null});
+    setSelectedImage({localUri: pickerResult.uri});
     
   };
 
