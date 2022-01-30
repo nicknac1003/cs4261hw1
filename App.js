@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View, TextInput,  
+import {StyleSheet, Text, View, TextInput,  
 KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform, Button } from 'react-native';
 import { firebase } from './config.js';
 
@@ -17,19 +17,17 @@ export default function App() {
       .catch((err)=>alert(err))
       
   }
-  let handlePress = () => {
-    Keyboard.dismiss();
-    console.log('pressed');
-  }
 
 
   return (
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <TouchableWithoutFeedback onPress={handlePress} style={{flex: 1, height: 500}}>
+      <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           
             {
               (authSucc===false)?
-              <View styles={styles.content}>
+              <View style={styles.content}>
                 <Text style={styles.header}>Register Account</Text>
                 <TextInput
                 style={styles.input}
@@ -64,26 +62,23 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //height: 1000000,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   content: {
     flex: 1,
     padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
-    fontSize: 40, 
-    alignSelf: 'center', 
-    marginBottom: 50,
+    fontSize: 48, 
+    marginBottom: 48,
   },
   input: {
-    height: 40,
+    height: 50,
     width: 300,
-    margin: 12,
     borderBottomWidth: 1,
     padding: 10,
-    alignSelf: 'center',
     marginBottom: 36,
+    fontSize: 16,
   },
 });
