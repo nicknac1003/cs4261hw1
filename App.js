@@ -17,16 +17,20 @@ export default function App() {
       .catch((err)=>alert(err))
       
   }
+  let handlePress = () => {
+    Keyboard.dismiss();
+    console.log('pressed');
+  }
 
 
   return (
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <TouchableWithoutFeedback onPress={handlePress} style={{flex: 1, height: 500}}>
           
             {
               (authSucc===false)?
               <View styles={styles.content}>
-                <Text style={{fontSize: 40, alignSelf: 'center', marginBottom: 50}}>Register Account</Text>
+                <Text style={styles.header}>Register Account</Text>
                 <TextInput
                 style={styles.input}
                 value={profile.email}
@@ -42,8 +46,10 @@ export default function App() {
                 secureTextEntry={true}
                 placeholder='password...'
                 />
-
-                <Button title='Submit' onPress={handleSubmit}></Button>
+                <View style={{backgroundColor: 'white', marginTop: 12}}>
+                  <Button title='Submit' onPress={handleSubmit}></Button>
+                </View>
+                
               </View>
             :
             <Text>Account Created</Text>
@@ -58,48 +64,26 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    //height: 1000000,
     justifyContent: 'center',
     alignItems: 'center',
   },
   content: {
-    backgroundColor: '#fff',
-    
+    flex: 1,
+    padding: 24,
   },
-  logo: {
-    width: 305,
-    height: 159,
-    marginBottom: 10,
-    alignSelf: 'center',
-  },
-  instructions: {
-    color: '#888',
-    fontSize: 18,
-    marginHorizontal: 15,
-    textAlign: 'center',
-  },
-  button: {
-    width: 200,
-    backgroundColor: 'blue',
-    padding: 20,
-    borderRadius: 5,
-    alignSelf: 'center',
-  },
-  buttonText: {
-    fontSize: 20,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  thumbnail: {
-    width: 300,
-    height: 300,
-    resizeMode: 'contain',
+  header: {
+    fontSize: 40, 
+    alignSelf: 'center', 
+    marginBottom: 50,
   },
   input: {
     height: 40,
     width: 300,
     margin: 12,
-    borderWidth: 1,
+    borderBottomWidth: 1,
     padding: 10,
     alignSelf: 'center',
+    marginBottom: 36,
   },
 });
