@@ -44,13 +44,13 @@ export default function App() {
                 secureTextEntry={true}
                 placeholder='password...'
                 />
-                <View style={{backgroundColor: 'white', marginTop: 12}}>
+                <View style={styles.button}>
                   <Button title='Submit' onPress={handleSubmit}></Button>
                 </View>
                 
               </View>
             :
-            <Text>Account Created</Text>
+            <Text style={{alignSelf: 'center'}}>Account Created</Text>
             }
             
           
@@ -62,6 +62,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center'
   },
   content: {
     flex: 1,
@@ -81,4 +82,8 @@ const styles = StyleSheet.create({
     marginBottom: 36,
     fontSize: 16,
   },
+  button: {
+    backgroundColor: 'white', 
+    marginTop: 12, 
+  }
 });
